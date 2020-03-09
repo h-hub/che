@@ -54,28 +54,29 @@ import { ITokenHandler } from './utils/requestHandlers/tokens/ITokenHandler';
 import { CheApiRequestHandler } from './utils/requestHandlers/CheApiRequestHandler';
 import { CheGitApi } from './utils/VCS/CheGitApi';
 import { GitHubUtil} from './utils/VCS/github/GitHubUtil';
+import { GetStarted } from './pageobjects/dashboard/GetStarted';
 import { OpenshiftPlugin } from './pageobjects/ide/OpenshiftPlugin';
 
-const e2eContainer: Container = new Container();
+const e2eContainer: Container = new Container({ defaultScope: 'Transient' });
 
 
 e2eContainer.bind<IDriver>(TYPES.Driver).to(ChromeDriver).inSingletonScope();
-e2eContainer.bind<ITestWorkspaceUtil>(TYPES.WorkspaceUtil).to(TestWorkspaceUtil).inSingletonScope();
-e2eContainer.bind<IOcpLoginPage>(TYPES.OcpLogin).to(OcpUserLoginPage).inSingletonScope();
+e2eContainer.bind<ITestWorkspaceUtil>(TYPES.WorkspaceUtil).to(TestWorkspaceUtil);
+e2eContainer.bind<IOcpLoginPage>(TYPES.OcpLogin).to(OcpUserLoginPage);
 
 if (TestConstants.TS_SELENIUM_MULTIUSER) {
-    e2eContainer.bind<IAuthorizationHeaderHandler>(TYPES.IAuthorizationHeaderHandler).to(CheMultiuserAuthorizationHeaderHandler).inSingletonScope();
-    e2eContainer.bind<ITokenHandler>(TYPES.ITokenHandler).to(CheMultiuserTokenHandler).inSingletonScope();
+    e2eContainer.bind<IAuthorizationHeaderHandler>(TYPES.IAuthorizationHeaderHandler).to(CheMultiuserAuthorizationHeaderHandler);
+    e2eContainer.bind<ITokenHandler>(TYPES.ITokenHandler).to(CheMultiuserTokenHandler);
 
     if (JSON.parse(TestConstants.TS_SELENIUM_VALUE_OPENSHIFT_OAUTH)) {
-        e2eContainer.bind<ICheLoginPage>(TYPES.CheLogin).to(RegularUserOcpCheLoginPage).inSingletonScope();
+        e2eContainer.bind<ICheLoginPage>(TYPES.CheLogin).to(RegularUserOcpCheLoginPage);
     } else {
-        e2eContainer.bind<ICheLoginPage>(TYPES.CheLogin).to(MultiUserLoginPage).inSingletonScope();
+        e2eContainer.bind<ICheLoginPage>(TYPES.CheLogin).to(MultiUserLoginPage);
     }
 
 } else {
-    e2eContainer.bind<ICheLoginPage>(TYPES.CheLogin).to(SingleUserLoginPage).inSingletonScope();
-    e2eContainer.bind<IAuthorizationHeaderHandler>(TYPES.IAuthorizationHeaderHandler).to(CheSingleUserAuthorizationHeaderHandler).inSingletonScope();
+    e2eContainer.bind<ICheLoginPage>(TYPES.CheLogin).to(SingleUserLoginPage);
+    e2eContainer.bind<IAuthorizationHeaderHandler>(TYPES.IAuthorizationHeaderHandler).to(CheSingleUserAuthorizationHeaderHandler);
 }
 
 e2eContainer.bind<ContextMenu>(CLASSES.ContextMenu).to(ContextMenu);
@@ -107,5 +108,6 @@ e2eContainer.bind<CheApiRequestHandler>(CLASSES.CheApiRequestHandler).to(CheApiR
 e2eContainer.bind<CheGitApi>(CLASSES.CheGitApi).to(CheGitApi);
 e2eContainer.bind<GitHubUtil>(CLASSES.GitHubUtil).to(GitHubUtil);
 e2eContainer.bind<OpenshiftPlugin>(CLASSES.OpenshiftPlugin).to(OpenshiftPlugin);
+e2eContainer.bind<GetStarted>(CLASSES.GetStarted).to(GetStarted);
 
 export { e2eContainer };
