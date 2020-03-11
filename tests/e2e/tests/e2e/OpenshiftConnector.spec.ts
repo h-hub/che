@@ -17,11 +17,13 @@ import { ICheLoginPage } from '../../pageobjects/login/ICheLoginPage';
 import { TestConstants } from '../../TestConstants';
 import { DriverHelper } from '../../utils/DriverHelper';
 import { TestWorkspaceUtil } from '../../utils/workspace/TestWorkspaceUtil';
-import { OpenshiftPlugin, OpenshiftAppExplorerToolbar } from '../../pageobjects/ide/OpenshiftPlugin';
+import { OpenshiftPlugin, OpenshiftAppExplorerToolbar, OpenshiftContextMenuItems } from '../../pageobjects/ide/OpenshiftPlugin';
 import { QuickOpenContainer } from '../../pageobjects/ide/QuickOpenContainer';
 import { ProjectTree } from '../../pageobjects/ide/ProjectTree';
+import { DialogWindow } from '../../pageobjects/ide/DialogWindow';
 
 const driverHelper: DriverHelper = e2eContainer.get(CLASSES.DriverHelper);
+const warningDialog: DialogWindow = e2eContainer.get(CLASSES.DialogWindow);
 const ide: Ide = e2eContainer.get(CLASSES.Ide);
 const loginPage: ICheLoginPage = e2eContainer.get<ICheLoginPage>(TYPES.CheLogin);
 const testWorkspaceUtils: TestWorkspaceUtil = e2eContainer.get<TestWorkspaceUtil>(TYPES.WorkspaceUtil);
@@ -47,14 +49,21 @@ suite('Openshift connector user story', async () => {
         await testWorkspaceUtils.createWsFromDevFile(wsConfig);
     });
 
-    test('Login into workspace and open tree container', async () => {
-        const provideAuthenticationSuffix: string = 'for basic authentication to the API server (Press \'Enter\' to confirm your input or \'Escape\' to cancel)'
-        const loginIntoClusterMessage: string = 'You are already logged in the cluster. Do you want to login to a different cluster?';
+    test('Login into waorkspace and open plugin', async () => {
         await driverHelper.navigateToUrl(workspacePrefixUrl + wsName);
         await loginPage.login();
         await ide.waitWorkspaceAndIde(namespace, wsName);
         await dashBoard.waitDisappearanceNavigationMenu();
         await openshiftPlugin.clickOnOpenshiftToollBarIcon();
+        await openshiftPlugin.waitOpenshiftConnectorTree();
+        
+    });
+
+
+
+    test('Login into current cluster', async()=>{
+        const provideAuthenticationSuffix: string = 'for basic authentication to the API server (Press \'Enter\' to confirm your input or \'Escape\' to cancel)';
+        const loginIntoClusterMessage: string = 'You are already logged in the cluster. Do you want to login to a different cluster?';
         const openshiftIP: string = await openshiftPlugin.getClusterIP();
         await openshiftPlugin.clickOnApplicationToolbarItem(OpenshiftAppExplorerToolbar.LogIntoCluster);
         await ide.clickOnNotificationButton(loginIntoClusterMessage, 'Yes');
@@ -63,8 +72,16 @@ suite('Openshift connector user story', async () => {
         await quickOpenContainer.clickOnContainerItem('$(plus) Add new user...');
         await quickOpenContainer.typeAndSelectSuggestion('developer', `Provide Username ${provideAuthenticationSuffix}`);
         await quickOpenContainer.typeAndSelectSuggestion('123', `Provide Password ${provideAuthenticationSuffix}`);
-        await projectTree.clickOnItem('')
     });
+
+    test('Create new component', async()=>{
+        await openshiftPlugin.invokeContextMenuCommandOnItem('myproject', OpenshiftContextMenuItems.NewComponent);
+        await quickOpenContainer.clickOnContainerItem('$(plus) Create new Application...');
+        await quickOpenContainer.typeAndSelectSuggestion('component', 'Provide Application name (Press \'Enter\' to confirm your input or \'Escape\' to cancel)');
+        await quickOpenContainer.clickOnContainerItem('Workspace Directory');
+        await quickOpenContainer.clickOnContainerItem('$(plus) Add new context folder.');
+        await warningDialog.waitDialog();
+   });
 
 });
 

@@ -14,6 +14,7 @@ import { Ide, LeftToolbarButton } from './Ide';
 import { TestConstants } from '../../TestConstants';
 import { Logger } from '../../utils/Logger';
 import { By } from 'selenium-webdriver';
+import { ContextMenu } from './ContextMenu';
 
 export enum OpenshiftAppExplorerToolbar {
     ReportExtensionIssueOnGitHub = 'Report Extension Issue on GitHub',
@@ -22,12 +23,17 @@ export enum OpenshiftAppExplorerToolbar {
     LogIntoCluster = 'Log in to cluster'
 }
 
+export enum OpenshiftContextMenuItems {
+    NewComponent = 'New Component',
+}
+
 @injectable()
 export class OpenshiftPlugin {
 
 
     constructor(@inject(CLASSES.DriverHelper) private readonly driverHelper: DriverHelper,
         @inject(CLASSES.Ide) private readonly ide: Ide,
+        @inject(CLASSES.ContextMenu) private readonly contextMenu: ContextMenu
     ) {
     }
 
@@ -42,19 +48,39 @@ export class OpenshiftPlugin {
         await this.driverHelper.waitPresence(By.id('openshiftProjectExplorer'), timeout);
     }
 
-    async clicKOnApplicationToolbarItem(item: OpenshiftAppExplorerToolbar, timeout: number = TestConstants.TS_SELENIUM_DEFAULT_TIMEOUT) {
-        Logger.debug(`OpenshiftPlugin.waitOpenshiftConnectorTree`);
-        await this.driverHelper.waitPresence(By.css(`div [title='${item}']`), timeout);
-    }
-
     async clickOnApplicationToolbarItem(item: OpenshiftAppExplorerToolbar, timeout: number = TestConstants.TS_SELENIUM_DEFAULT_TIMEOUT) {
-        Logger.debug(`OpenshiftPlugin.waitOpenshiftConnectorTree`);
+        Logger.debug(`OpenshiftPlugin.clickOnApplicationToolbarItem`);
         await this.driverHelper.waitAndClick(By.css(`div [title='${item}']`), timeout);
     }
 
     async getClusterIP(timeout: number = TestConstants.TS_SELENIUM_DEFAULT_TIMEOUT): Promise<string> {
-        Logger.debug(`OpenshiftPlugin.waitOpenshiftConnectorTree`);
+        Logger.debug(`OpenshiftPlugin.getClusterIP`);
         return await this.driverHelper.waitAndGetText(By.xpath('//div[@id=\'openshiftProjectExplorer\']//div[@title [contains(text(), https)]]'), timeout);
     }
+    async waitItemInTree(item:string, timeout: number = TestConstants.TS_SELENIUM_DEFAULT_TIMEOUT) {
+        Logger.debug(`OpenshiftPlugin.waitItemInTree`);
+        await this.driverHelper.waitPresence(By.xpath(`//div[contains(@id, :${item})]`), timeout);
+    }
+
+    async clickOnItemInTree(item:string, timeout: number = TestConstants.TS_SELENIUM_DEFAULT_TIMEOUT) {
+        Logger.debug(`OpenshiftPlugin.clickOnItemInTree`);
+        await this.driverHelper.waitAndClick(By.xpath(`//div[contains(@id, ':${item})]'`), timeout);
+    }
+
+    async invokeContextMenuOnItem(treeItem:string, timeout: number = TestConstants.TS_SELENIUM_DEFAULT_TIMEOUT) {
+        Logger.debug(`OpenshiftPlugin.clickOnItemInTree`);
+        await this.contextMenu.invokeContextMenuOnTheElementWithMouse(By.xpath(`//div[contains(@id, ':${treeItem}')]`), timeout);
+    }
+
+    async invokeContextMenuCommandOnItem(treeItem:string, menuItem:OpenshiftContextMenuItems, timeout: number = TestConstants.TS_SELENIUM_DEFAULT_TIMEOUT) {
+        Logger.debug(`OpenshiftPlugin.clickOnItemInTree`);
+        await this.contextMenu.invokeContextMenuOnTheElementWithMouse(By.xpath(`//div[contains(@id, ':${treeItem}')]`), timeout);
+        await this.contextMenu.waitContextMenuAndClickOnItem(menuItem);
+    }
+
+
+
+
+
 }
 
